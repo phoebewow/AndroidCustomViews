@@ -71,7 +71,7 @@ public class RainbowPalette extends View {
     private void init(AttributeSet attrs){
         setPaletteSize();
         initAttrColor(attrs);
-        initPaint();
+        initPaint(attrs);
         initPosition();
         initRadiusWidth(attrs);
     }
@@ -129,7 +129,13 @@ public class RainbowPalette extends View {
     /**
      * 初始化各种Paint对象
      */
-    private void initPaint(){
+    private void initPaint(AttributeSet attrs){
+        TypedArray types = context.obtainStyledAttributes(attrs, R.styleable.rainbow_palette);
+        try {
+            paletteWidth = types.getDimensionPixelOffset(R.styleable.rainbow_palette_palette_width, PALETTE_WIDTH);
+        } finally {
+            types.recycle(); // TypeArray用完需要recycle
+        }
         setGradientColors();
         Shader shader = new SweepGradient(0, 0, gradientColors, null);//SweepGradient渐变
         //外层彩虹光环
@@ -144,7 +150,7 @@ public class RainbowPalette extends View {
         palettePaint.setAntiAlias(true);
         palettePaint.setShader(shader);//传入着色器
         palettePaint.setStyle(Paint.Style.STROKE);//设置仅描边
-        palettePaint.setStrokeWidth(PALETTE_WIDTH);//设置描边的宽度，直接对应
+        palettePaint.setStrokeWidth(paletteWidth);//设置描边的宽度，直接对应
         //初始化中心圆的Paint对象
         centerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         centerPaint.setAntiAlias(true);
@@ -159,11 +165,10 @@ public class RainbowPalette extends View {
     }
 
     private void initAttrColor(AttributeSet attrs){
-        TypedArray types = context.obtainStyledAttributes(attrs,
-                R.styleable.rainbow_palette);
+        TypedArray types = context.obtainStyledAttributes(attrs, R.styleable.rainbow_palette);
         try {
-            centerCircleColor = types.getColor( R.styleable.rainbow_palette_center_circle_defcolor,DEF_CIRCLE_COLOR );
-            indictorColor = types.getColor( R.styleable.rainbow_palette_indicator_color,DEF_INDICTOR_COLOR );
+            centerCircleColor = types.getColor(R.styleable.rainbow_palette_center_circle_defcolor,DEF_CIRCLE_COLOR );
+            indictorColor = types.getColor(R.styleable.rainbow_palette_indicator_color,DEF_INDICTOR_COLOR );
         } finally {
             types.recycle(); // TypeArray用完需要recycle
         }
@@ -173,17 +178,14 @@ public class RainbowPalette extends View {
      * 设置色环和中心圆、圆形指示小球的半径,宽度
      */
     private void initRadiusWidth(AttributeSet attrs){
-        TypedArray types = context.obtainStyledAttributes(attrs,
-                R.styleable.rainbow_palette);
+        TypedArray types = context.obtainStyledAttributes(attrs, R.styleable.rainbow_palette);
         try {
-
-            paletteWidth = types.getDimensionPixelOffset( R.styleable.rainbow_palette_palette_width, PALETTE_WIDTH);
-            paletteRadius=types.getDimensionPixelOffset(R.styleable.rainbow_palette_palette_radius,(int)(width / 2 - palettePaint.getStrokeWidth()*1.2f));
+            paletteRadius=types.getDimensionPixelOffset(R.styleable.rainbow_palette_palette_radius,(int)(width / 1.8f - palettePaint.getStrokeWidth()*1.2f));
             centerRadius=types.getDimensionPixelOffset(R.styleable.rainbow_palette_palette_radius,(int)((paletteRadius - palettePaint.getStrokeWidth() / 2 ) * 0.5f));
             indictorResId=types.getResourceId(R.styleable.rainbow_palette_ic_indicator,0);
             if(indictorResId==0) {
                 //未指定指示器的图标采用默认的绘制一个小圆形
-                indictorRadius = (float) (centerRadius * 0.5);
+                indictorRadius = centerRadius * 0.5f;
             }else {
                 initIndictorImg();//使用设置的指示器目标
             }
